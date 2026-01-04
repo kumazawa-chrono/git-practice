@@ -1,0 +1,49 @@
+name: ❓ 質問
+description: 学習内容に関する質問（技術的な質問はDiscussionsを推奨）
+title: "[質問] "
+labels: ["question"]
+assignees: []
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ⚠️ **技術的な質問は [GitHub Discussions](../../discussions) を使ってください！**
+        
+        このIssueテンプレートは、コンテンツ自体への質問（説明の意図など）用です。
+
+  - type: input
+    id: file
+    attributes:
+      label: 関連コンテンツ
+      description: 質問に関連するファイルやカテゴリ
+      placeholder: content/common/03-software-design/
+    validations:
+      required: true
+
+  - type: textarea
+    id: question
+    attributes:
+      label: 質問内容
+      description: 何がわからないですか？
+    validations:
+      required: true
+
+  - type: textarea
+    id: tried
+    attributes:
+      label: 調べたこと
+      description: 自分で調べたことを教えてください
+      placeholder: |
+        - 公式ドキュメントの〇〇を読んだ
+        - 〇〇で検索した
+
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: 確認事項
+      options:
+        - label: コンテンツを最後まで読みました
+          required: true
+        - label: 公式ドキュメントを確認しました
+          required: false

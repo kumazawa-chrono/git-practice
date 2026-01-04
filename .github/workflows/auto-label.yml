@@ -1,0 +1,59 @@
+name: Auto Label
+
+on:
+  pull_request:
+    types: [opened, synchronize]
+
+jobs:
+  label:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Add labels based on path
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const { owner, repo } = context.repo;
+            const prNumber = context.payload.pull_request.number;
+            const files = await github.rest.pulls.listFiles({
+              owner, repo, pull_number: prNumber
+            });
+            
+            const labels = new Set();
+            
+            for (const file of files.data) {
+              if (file.filename.startsWith('exercises/common/')) {
+                labels.add('共通基礎');
+                const match = file.filename.match(/exercises\/common\/(\d+-[^/]+)/);
+                if (match) labels.add(match[1]);
+              }
+              if (file.filename.startsWith('exercises/web/')) {
+                labels.add('Webコース');
+                const match = file.filename.match(/exercises\/web\/(\d+-[^/]+)/);
+                if (match) labels.add(match[1]);
+              }
+              if (file.filename.startsWith('exercises/mobile/')) {
+                labels.add('モバイルコース');
+                const match = file.filename.match(/exercises\/mobile\/(\d+-[^/]+)/);
+                if (match) labels.add(match[1]);
+              }
+              if (file.filename.startsWith('exercises/iot/')) {
+                labels.add('IoTコース');
+                const match = file.filename.match(/exercises\/iot\/(\d+-[^/]+)/);
+                if (match) labels.add(match[1]);
+              }
+            }
+            
+            // 研修生名を抽出
+            const branch = context.payload.pull_request.head.ref;
+            const studentMatch = branch.match(/student\/([^/]+)/);
+            if (studentMatch) {
+              labels.add(`student:${studentMatch[1]}`);
+            }
+            
+            if (labels.size > 0) {
+              await github.rest.issues.addLabels({
+                owner, repo,
+                issue_number: prNumber,
+                labels: Array.from(labels)
+              });
+            }

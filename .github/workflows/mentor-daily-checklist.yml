@@ -1,0 +1,430 @@
+name: Mentor Daily Checklist
+
+on:
+  schedule:
+    - cron: '0 9 * * *'  # 毎日 9:00 JST
+  workflow_dispatch:
+
+jobs:
+  checklist:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Generate daily checklist
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const path = require('path');
+            
+            const today = new Date();
+            const todayStr = today.toISOString().split('T')[0];
+            const dayOfWeek = today.getDay(); // 0 = Sunday, 1 = Monday, ...
+            const isMonday = dayOfWeek === 1;
+            
+            // チェックリスト項目を収集
+            const checklist = {
+              date: todayStr,
+              dayOfWeek: ['日', '月', '火', '水', '木', '金', '土'][dayOfWeek],
+              items: []
+            };
+            
+            // 1. 未対応のPRをチェック
+            const pendingPRs = await getPendingPRs();
+            if (pendingPRs.length > 0) {
+              checklist.items.push({
+                category: 'PRレビュー',
+                priority: 'high',
+                title: `レビュー待ちのPR: ${pendingPRs.length}件`,
+                items: pendingPRs.map(pr => ({
+                  text: `[#${pr.number}] ${pr.title}`,
+                  url: pr.html_url,
+                  assignee: pr.user?.login || '未割り当て'
+                })),
+                action: '優先度の高いPRからレビューを実施'
+              });
+            }
+            
+            // 2. 未回答のDiscussionsをチェック
+            const unansweredDiscussions = await getUnansweredDiscussions();
+            if (unansweredDiscussions.length > 0) {
+              checklist.items.push({
+                category: '質問対応',
+                priority: 'high',
+                title: `未回答の質問: ${unansweredDiscussions.length}件`,
+                items: unansweredDiscussions.map(disc => ({
+                  text: disc.title,
+                  url: disc.html_url,
+                  author: disc.user?.login || '不明'
+                })),
+                action: '24時間以内に回答を推奨'
+              });
+            }
+            
+            // 3. モチベーションアラートをチェック
+            const motivationAlerts = await getMotivationAlerts();
+            if (motivationAlerts.length > 0) {
+              checklist.items.push({
+                category: 'モチベーション管理',
+                priority: motivationAlerts.some(a => a.severity === 'critical') ? 'critical' : 'high',
+                title: `モチベーションアラート: ${motivationAlerts.length}件`,
+                items: motivationAlerts.map(alert => ({
+                  text: `${alert.student}: ${alert.message}`,
+                  url: alert.url,
+                  severity: alert.severity
+                })),
+                action: '早急に確認し、必要に応じて1on1を実施'
+              });
+            }
+            
+            // 4. 新しいIssueをチェック（過去24時間）
+            const newIssues = await getNewIssues();
+            if (newIssues.length > 0) {
+              checklist.items.push({
+                category: 'Issue対応',
+                priority: 'medium',
+                title: `新しいIssue: ${newIssues.length}件`,
+                items: newIssues.map(issue => ({
+                  text: `[#${issue.number}] ${issue.title}`,
+                  url: issue.html_url,
+                  labels: issue.labels?.map(l => l.name).join(', ') || 'なし'
+                })),
+                action: '優先度を確認し、必要に応じて対応'
+              });
+            }
+            
+            // 5. 週次レポート確認（月曜日のみ）
+            if (isMonday) {
+              const weeklyReport = await getWeeklyReport();
+              checklist.items.push({
+                category: '週次確認',
+                priority: 'high',
+                title: '週次進捗レポートの確認',
+                items: weeklyReport ? [{
+                  text: '週次進捗レポート',
+                  url: weeklyReport.url
+                }] : [{
+                  text: '週次レポートがまだ生成されていません',
+                  url: null
+                }],
+                action: '全研修生の進捗を確認し、今週の計画を立てる'
+              });
+            }
+            
+            // 6. 1on1予定の確認（金曜日のみ）
+            if (dayOfWeek === 5) { // 金曜日
+              checklist.items.push({
+                category: '1on1準備',
+                priority: 'high',
+                title: '来週の1on1準備',
+                items: [{
+                  text: '1on1のスケジュールを確認',
+                  url: null
+                }, {
+                  text: '各研修生の進捗を確認',
+                  url: null
+                }],
+                action: '来週の1on1の準備とスケジュール調整'
+              });
+            }
+            
+            // チェックリストIssueを作成または更新
+            await createOrUpdateChecklistIssue(checklist);
+            
+            /**
+             * レビュー待ちのPRを取得
+             */
+            async function getPendingPRs() {
+              try {
+                const prs = await github.rest.pulls.list({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  state: 'open',
+                  sort: 'updated',
+                  direction: 'desc',
+                  per_page: 20
+                });
+                
+                // レビュー待ちのPRをフィルタ
+                // 自分がレビュアーに割り当てられている、または未割り当てのPR
+                const pending = [];
+                for (const pr of prs.data) {
+                  // 自動テストが通過しているPRのみ
+                  const checks = await github.rest.checks.listForRef({
+                    owner: context.repo.owner,
+                    repo: context.repo.repo,
+                    ref: pr.head.sha
+                  });
+                  
+                  const allPassed = checks.data.check_runs.every(
+                    check => check.conclusion === 'success' || check.status === 'completed'
+                  );
+                  
+                  if (allPassed && pr.requested_reviewers && pr.requested_reviewers.length > 0) {
+                    pending.push(pr);
+                  }
+                }
+                
+                return pending.slice(0, 10); // 最大10件
+              } catch (error) {
+                console.error('Error getting pending PRs:', error);
+                return [];
+              }
+            }
+            
+            /**
+             * 未回答のDiscussionsを取得
+             */
+            async function getUnansweredDiscussions() {
+              try {
+                const discussions = await github.rest.discussions.listForRepo({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  state: 'open',
+                  sort: 'updated',
+                  direction: 'desc',
+                  per_page: 20
+                });
+                
+                // 過去24時間以内に作成または更新された質問
+                const oneDayAgo = new Date();
+                oneDayAgo.setDate(oneDayAgo.getDate() - 1);
+                
+                const unanswered = [];
+                for (const disc of discussions.data) {
+                  const updatedAt = new Date(disc.updated_at);
+                  if (updatedAt > oneDayAgo) {
+                    // メンターによる回答がない場合
+                    const comments = await github.rest.discussions.listComments({
+                      owner: context.repo.owner,
+                      repo: context.repo.repo,
+                      discussion_number: disc.number
+                    });
+                    
+                    // メンターの回答があるかチェック（簡易版：author_associationがOWNERまたはMEMBER）
+                    const hasMentorAnswer = comments.data.some(
+                      comment => comment.author_association === 'OWNER' || comment.author_association === 'MEMBER'
+                    );
+                    
+                    if (!hasMentorAnswer) {
+                      unanswered.push(disc);
+                    }
+                  }
+                }
+                
+                return unanswered.slice(0, 10); // 最大10件
+              } catch (error) {
+                console.error('Error getting unanswered discussions:', error);
+                return [];
+              }
+            }
+            
+            /**
+             * モチベーションアラートを取得
+             */
+            async function getMotivationAlerts() {
+              try {
+                const issues = await github.rest.issues.listForRepo({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  state: 'open',
+                  labels: 'モチベーションアラート',
+                  per_page: 10
+                });
+                
+                // Issueの本文からアラート情報を抽出（簡易版）
+                const alerts = [];
+                for (const issue of issues.data) {
+                  // Critical/Warning/Infoセクションから情報を抽出
+                  const criticalMatch = issue.body.match(/## 🔴 Critical\n\n([\s\S]*?)(?=##|$)/);
+                  const warningMatch = issue.body.match(/## 🟡 Warning\n\n([\s\S]*?)(?=##|$)/);
+                  
+                  if (criticalMatch) {
+                    const students = criticalMatch[1].match(/### (.+)\n/g);
+                    if (students) {
+                      students.forEach(student => {
+                        alerts.push({
+                          student: student.replace('### ', '').trim(),
+                          message: 'Criticalアラート',
+                          url: issue.html_url,
+                          severity: 'critical'
+                        });
+                      });
+                    }
+                  }
+                  
+                  if (warningMatch) {
+                    const students = warningMatch[1].match(/### (.+)\n/g);
+                    if (students) {
+                      students.forEach(student => {
+                        alerts.push({
+                          student: student.replace('### ', '').trim(),
+                          message: 'Warningアラート',
+                          url: issue.html_url,
+                          severity: 'warning'
+                        });
+                      });
+                    }
+                  }
+                }
+                
+                return alerts;
+              } catch (error) {
+                console.error('Error getting motivation alerts:', error);
+                return [];
+              }
+            }
+            
+            /**
+             * 新しいIssueを取得（過去24時間）
+             */
+            async function getNewIssues() {
+              try {
+                const oneDayAgo = new Date();
+                oneDayAgo.setDate(oneDayAgo.getDate() - 1);
+                
+                const issues = await github.rest.issues.listForRepo({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  state: 'open',
+                  sort: 'created',
+                  direction: 'desc',
+                  per_page: 10
+                });
+                
+                return issues.data.filter(issue => {
+                  const createdAt = new Date(issue.created_at);
+                  return createdAt > oneDayAgo && !issue.pull_request; // PRは除外
+                });
+              } catch (error) {
+                console.error('Error getting new issues:', error);
+                return [];
+              }
+            }
+            
+            /**
+             * 週次レポートを取得
+             */
+            async function getWeeklyReport() {
+              try {
+                const issues = await github.rest.issues.listForRepo({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  state: 'open',
+                  labels: '週次レポート',
+                  per_page: 1
+                });
+                
+                if (issues.data.length > 0) {
+                  return {
+                    url: issues.data[0].html_url,
+                    title: issues.data[0].title
+                  };
+                }
+                
+                return null;
+              } catch (error) {
+                console.error('Error getting weekly report:', error);
+                return null;
+              }
+            }
+            
+            /**
+             * チェックリストIssueを作成または更新
+             */
+            async function createOrUpdateChecklistIssue(checklist) {
+              const issueTitle = `📋 メンターデイリーチェックリスト - ${checklist.date} (${checklist.dayOfWeek})`;
+              
+              // 既存の今日のチェックリストIssueを検索
+              const issues = await github.rest.issues.listForRepo({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                state: 'open',
+                labels: 'メンターチェックリスト',
+                per_page: 10
+              });
+              
+              const todayIssue = issues.data.find(issue => 
+                issue.title.includes(checklist.date)
+              );
+              
+              let body = `# 📋 メンターデイリーチェックリスト\n\n`;
+              body += `**日付**: ${checklist.date} (${checklist.dayOfWeek})\n`;
+              body += `**生成日時**: ${new Date().toLocaleString('ja-JP', { timeZone: 'Asia/Tokyo' })}\n\n`;
+              body += `---\n\n`;
+              
+              // 優先度順にソート
+              const priorityOrder = { 'critical': 0, 'high': 1, 'medium': 2, 'low': 3 };
+              checklist.items.sort((a, b) => 
+                (priorityOrder[a.priority] || 99) - (priorityOrder[b.priority] || 99)
+              );
+              
+              if (checklist.items.length === 0) {
+                body += `## ✅ 本日のチェック項目\n\n`;
+                body += `すべての項目が完了しています！素晴らしいです 🎉\n\n`;
+                body += `### 基本チェックリスト\n\n`;
+                body += `- [ ] GitHub通知を確認\n`;
+                body += `- [ ] 新しいPRやIssueがないか確認\n`;
+                body += `- [ ] Discussionsの質問がないか確認\n`;
+              } else {
+                body += `## 📌 本日のチェック項目\n\n`;
+                
+                for (const item of checklist.items) {
+                  const priorityEmoji = {
+                    'critical': '🔴',
+                    'high': '🟡',
+                    'medium': '🟢',
+                    'low': '⚪'
+                  }[item.priority] || '⚪';
+                  
+                  body += `### ${priorityEmoji} ${item.category}: ${item.title}\n\n`;
+                  body += `**推奨アクション**: ${item.action}\n\n`;
+                  
+                  if (item.items && item.items.length > 0) {
+                    body += `**詳細**:\n\n`;
+                    for (const subItem of item.items) {
+                      if (subItem.url) {
+                        body += `- [ ] [${subItem.text}](${subItem.url})\n`;
+                      } else {
+                        body += `- [ ] ${subItem.text}\n`;
+                      }
+                    }
+                  }
+                  
+                  body += `\n`;
+                }
+                
+                body += `---\n\n`;
+                body += `## ✅ 基本チェックリスト\n\n`;
+                body += `- [ ] GitHub通知を確認\n`;
+                body += `- [ ] 新しいPRやIssueがないか確認\n`;
+                body += `- [ ] Discussionsの質問がないか確認\n`;
+              }
+              
+              body += `\n---\n\n`;
+              body += `> 💡 このチェックリストは自動生成されています。対応後はチェックボックスにチェックを入れてください。\n`;
+              body += `> 📅 完了したら、このIssueをクローズしてください。\n`;
+              
+              if (todayIssue) {
+                // 既存のIssueを更新
+                await github.rest.issues.update({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  issue_number: todayIssue.number,
+                  title: issueTitle,
+                  body: body
+                });
+                console.log(`Updated checklist issue #${todayIssue.number}`);
+              } else {
+                // 新しいIssueを作成
+                await github.rest.issues.create({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  title: issueTitle,
+                  body: body,
+                  labels: ['メンターチェックリスト', '自動生成']
+                });
+                console.log('Created new checklist issue');
+              }
+            }

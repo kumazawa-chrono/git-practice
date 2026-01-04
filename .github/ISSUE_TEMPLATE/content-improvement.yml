@@ -1,0 +1,75 @@
+name: 💡 コンテンツ改善提案
+description: わかりにくい箇所、追加してほしい内容を提案
+title: "[改善] "
+labels: ["content", "enhancement"]
+assignees: []
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        コンテンツの改善提案をありがとうございます！
+        研修をより良くするためのフィードバックを歓迎します。
+
+  - type: input
+    id: file
+    attributes:
+      label: 対象コンテンツ
+      description: 改善したいファイルやカテゴリ
+      placeholder: content/common/02-programming-fundamentals/
+    validations:
+      required: true
+
+  - type: dropdown
+    id: improvement-type
+    attributes:
+      label: 改善の種類
+      options:
+        - わかりにくい箇所がある
+        - 説明を追加してほしい
+        - 図や画像を追加してほしい
+        - 例を増やしてほしい
+        - 練習問題を追加してほしい
+        - その他
+    validations:
+      required: true
+
+  - type: textarea
+    id: current-issue
+    attributes:
+      label: 現状の問題点
+      description: どこがわかりにくい、または不足していますか？
+      placeholder: |
+        例：
+        - 「〇〇の概念が急に出てきて理解できなかった」
+        - 「〇〇の例がないとイメージしにくい」
+    validations:
+      required: true
+
+  - type: textarea
+    id: suggestion
+    attributes:
+      label: 改善提案
+      description: どうすれば良くなると思いますか？
+      placeholder: |
+        例：
+        - 「〇〇の前に〇〇の説明を入れる」
+        - 「〇〇の図を追加する」
+
+  - type: textarea
+    id: background
+    attributes:
+      label: 背景（任意）
+      description: このカテゴリを学習したときの経験など
+      placeholder: |
+        例：
+        - 「プログラミング未経験で、〇〇がわからなかった」
+        - 「〇〇の経験はあったが、〇〇は初めてだった」
+
+  - type: checkboxes
+    id: contribution
+    attributes:
+      label: 改善への貢献
+      options:
+        - label: 自分でPRを作成して改善できます
+          required: false

@@ -1,0 +1,86 @@
+name: Progress Update
+
+on:
+  pull_request:
+    types: [closed]
+    branches: [main]
+
+jobs:
+  update-progress:
+    if: github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          
+      - name: Update progress file
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const path = require('path');
+            const branch = context.payload.pull_request.head.ref;
+            
+            // ブランチ名から研修生とカテゴリを抽出
+            const match = branch.match(/student\/([^/]+)\/([^/]+)\/(.+)/);
+            if (!match) {
+              console.log('Branch name does not match expected pattern:', branch);
+              return;
+            }
+            
+            const [, student, course, category] = match;
+            const progressPath = path.join('progress', 'students', student, 'progress.md');
+            
+            if (!fs.existsSync(progressPath)) {
+              console.log('Progress file not found:', progressPath);
+              return;
+            }
+            
+            // 進捗ファイルを更新
+            let content = fs.readFileSync(progressPath, 'utf8');
+            const today = new Date().toISOString().split('T')[0];
+            
+            // カテゴリの状態を完了に更新
+            // テーブル行のパターンにマッチする行を探す
+            const lines = content.split('\n');
+            let updated = false;
+            
+            for (let i = 0; i < lines.length; i++) {
+              const line = lines[i];
+              // カテゴリ名を含む行を探す（| で区切られたテーブル行）
+              if (line.includes('|') && line.includes(category)) {
+                // 課題列を完了に更新
+                const parts = line.split('|').map(p => p.trim());
+                if (parts.length >= 6) {
+                  // 課題列（通常は6番目）を更新
+                  parts[5] = '✅ 完了';
+                  // 完了日を更新（7番目があれば）
+                  if (parts.length >= 7) {
+                    parts[6] = today;
+                  }
+                  lines[i] = '| ' + parts.slice(1).join(' | ') + ' |';
+                  updated = true;
+                  break;
+                }
+              }
+            }
+            
+            if (updated) {
+              fs.writeFileSync(progressPath, lines.join('\n'));
+              console.log(`Updated progress for ${student}, category: ${category}`);
+            } else {
+              console.log(`Could not find category ${category} in progress file`);
+            }
+            
+      - name: Commit progress update
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add progress/
+          if git diff --staged --quiet; then
+            echo "No changes to commit"
+          else
+            git commit -m "chore: 進捗を自動更新 [skip ci]"
+            git push
+          fi

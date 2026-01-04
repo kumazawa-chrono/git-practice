@@ -1,0 +1,72 @@
+name: 📝 コンテンツの誤り報告
+description: 技術的な誤り、サンプルコードの問題、説明の間違いを報告
+title: "[コンテンツ] "
+labels: ["content", "bug"]
+assignees: []
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        コンテンツの誤りを報告していただきありがとうございます！
+        以下の情報を記入してください。
+
+  - type: input
+    id: file
+    attributes:
+      label: 対象ファイル
+      description: 問題があるファイルのパス
+      placeholder: content/common/01-git-basics/01-git-basics-01.md
+    validations:
+      required: true
+
+  - type: dropdown
+    id: error-type
+    attributes:
+      label: 問題の種類
+      options:
+        - 技術的な誤り
+        - サンプルコードが動かない
+        - 説明が間違っている
+        - リンク切れ
+        - 誤字脱字
+        - その他
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: 問題の詳細
+      description: 具体的に何が問題ですか？
+      placeholder: |
+        例：
+        - 「〇〇のコマンドを実行するとエラーが発生する」
+        - 「〇〇の説明が実際の動作と異なる」
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: 期待する内容
+      description: どうあるべきですか？
+      placeholder: |
+        例：
+        - 「正しいコマンドは〇〇」
+        - 「〇〇という説明が正しい」
+
+  - type: textarea
+    id: additional
+    attributes:
+      label: 補足情報
+      description: スクリーンショットや参考リンクがあれば
+      placeholder: スクリーンショットをドラッグ&ドロップ
+
+  - type: checkboxes
+    id: contribution
+    attributes:
+      label: 修正への貢献
+      options:
+        - label: 自分でPRを作成して修正できます
+          required: false

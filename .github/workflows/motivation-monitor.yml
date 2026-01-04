@@ -1,0 +1,275 @@
+name: Motivation Monitor
+
+on:
+  schedule:
+    - cron: '0 9 * * *'  # 毎日 9:00 JST
+  workflow_dispatch:
+
+jobs:
+  monitor:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Analyze motivation and progress
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const path = require('path');
+            
+            // 各研修生の進捗を分析
+            const studentsDir = path.join('progress', 'students');
+            
+            if (!fs.existsSync(studentsDir)) {
+              console.log('Students directory not found');
+              return;
+            }
+            
+            const students = fs.readdirSync(studentsDir).filter(item => {
+              const itemPath = path.join(studentsDir, item);
+              return fs.statSync(itemPath).isDirectory();
+            });
+            
+            const alerts = [];
+            
+            for (const student of students) {
+              const progressPath = path.join(studentsDir, student, 'progress.md');
+              if (!fs.existsSync(progressPath)) continue;
+              
+              const content = fs.readFileSync(progressPath, 'utf8');
+              
+              // 1. モチベーション低下の検出
+              const motivationAlerts = analyzeMotivation(content, student);
+              if (motivationAlerts.length > 0) {
+                alerts.push(...motivationAlerts);
+              }
+              
+              // 2. 進捗停滞の検出
+              const stagnationAlerts = analyzeStagnation(content, student);
+              if (stagnationAlerts.length > 0) {
+                alerts.push(...stagnationAlerts);
+              }
+              
+              // 3. PR活動の停滞検出
+              const prAlerts = await analyzePRActivity(student);
+              if (prAlerts.length > 0) {
+                alerts.push(...prAlerts);
+              }
+            }
+            
+            // アラートがあればIssueを作成または更新
+            if (alerts.length > 0) {
+              await createOrUpdateAlertIssue(alerts);
+            }
+            
+            /**
+             * モチベーション分析
+             */
+            function analyzeMotivation(content, student) {
+              const alerts = [];
+              
+              // 自己診断セクションを抽出
+              const assessmentSectionStart = content.indexOf('## 毎日の自己診断');
+              if (assessmentSectionStart === -1) return alerts;
+              
+              const assessmentSection = content.substring(assessmentSectionStart);
+              
+              // 各日の自己診断を抽出
+              const dayMatches = assessmentSection.match(/###\s*([^\n]+)\n\n([\s\S]*?)(?=###|---|$)/g);
+              if (!dayMatches || dayMatches.length < 3) return alerts;
+              
+              // 直近3日間のモチベーションを取得
+              const recentMotivations = [];
+              for (let i = Math.max(0, dayMatches.length - 3); i < dayMatches.length; i++) {
+                const match = dayMatches[i];
+                const motivationMatch = match.match(/\*\*モチベーション\*\*:\s*(\d+)\/5/);
+                if (motivationMatch) {
+                  recentMotivations.push(parseInt(motivationMatch[1]));
+                }
+              }
+              
+              // モチベーション低下の検出
+              if (recentMotivations.length >= 3) {
+                const avgMotivation = recentMotivations.reduce((a, b) => a + b, 0) / recentMotivations.length;
+                
+                // 3日連続で平均2以下、または急激な低下（最後の日が最初の日の半分以下）
+                if (avgMotivation <= 2) {
+                  alerts.push({
+                    type: 'low_motivation',
+                    student: student,
+                    severity: 'warning',
+                    message: `モチベーションが低い状態が続いています（直近3日平均: ${avgMotivation.toFixed(1)}/5）`,
+                    action: '1on1での相談を推奨'
+                  });
+                } else if (recentMotivations.length >= 2 && 
+                          recentMotivations[recentMotivations.length - 1] < recentMotivations[0] * 0.5) {
+                  alerts.push({
+                    type: 'motivation_drop',
+                    student: student,
+                    severity: 'warning',
+                    message: `モチベーションが急激に低下しています（${recentMotivations[0]}/5 → ${recentMotivations[recentMotivations.length - 1]}/5）`,
+                    action: '早めのサポートを推奨'
+                  });
+                }
+              }
+              
+              return alerts;
+            }
+            
+            /**
+             * 進捗停滞分析
+             */
+            function analyzeStagnation(content, student) {
+              const alerts = [];
+              
+              // 最後の更新日を取得
+              const lastUpdateMatch = content.match(/最終更新:\s*(\d{4}-\d{2}-\d{2})/);
+              if (!lastUpdateMatch) return alerts;
+              
+              const lastUpdate = new Date(lastUpdateMatch[1]);
+              const today = new Date();
+              const daysSinceUpdate = Math.floor((today - lastUpdate) / (1000 * 60 * 60 * 24));
+              
+              // 3日以上更新がない場合
+              if (daysSinceUpdate >= 3) {
+                alerts.push({
+                  type: 'stagnation',
+                  student: student,
+                  severity: daysSinceUpdate >= 7 ? 'critical' : 'warning',
+                  message: `進捗ファイルが${daysSinceUpdate}日間更新されていません（最終更新: ${lastUpdateMatch[1]}）`,
+                  action: 'Slackで確認、必要に応じて1on1を実施'
+                });
+              }
+              
+              return alerts;
+            }
+            
+            /**
+             * PR活動分析
+             */
+            async function analyzePRActivity(student) {
+              const alerts = [];
+              
+              try {
+                // 直近7日間のPRを取得
+                const prs = await github.rest.pulls.list({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  state: 'all',
+                  head: `student/${student}`,
+                  per_page: 10
+                });
+                
+                if (prs.data.length === 0) {
+                  // PRが全くない場合（研修開始から7日以上経過している場合のみ）
+                  alerts.push({
+                    type: 'no_pr_activity',
+                    student: student,
+                    severity: 'info',
+                    message: 'まだPRが作成されていません',
+                    action: '学習開始の確認'
+                  });
+                  return alerts;
+                }
+                
+                // 最新のPRの日付を取得
+                const latestPR = prs.data[0];
+                const latestPRDate = new Date(latestPR.created_at);
+                const today = new Date();
+                const daysSincePR = Math.floor((today - latestPRDate) / (1000 * 60 * 60 * 24));
+                
+                // 7日以上PRがない場合
+                if (daysSincePR >= 7) {
+                  alerts.push({
+                    type: 'pr_stagnation',
+                    student: student,
+                    severity: 'warning',
+                    message: `最後のPRから${daysSincePR}日が経過しています（最終PR: ${latestPRDate.toISOString().split('T')[0]}）`,
+                    action: '学習状況の確認を推奨'
+                  });
+                }
+              } catch (error) {
+                console.error(`Error analyzing PR activity for ${student}:`, error);
+              }
+              
+              return alerts;
+            }
+            
+            /**
+             * アラートIssueの作成または更新
+             */
+            async function createOrUpdateAlertIssue(alerts) {
+              const issueTitle = `🚨 モチベーション・進捗アラート - ${new Date().toISOString().split('T')[0]}`;
+              
+              // 既存のアラートIssueを検索
+              const issues = await github.rest.issues.listForRepo({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                state: 'open',
+                labels: 'モチベーションアラート'
+              });
+              
+              let body = '# モチベーション・進捗アラート\n\n';
+              body += `生成日時: ${new Date().toLocaleString('ja-JP', { timeZone: 'Asia/Tokyo' })}\n\n`;
+              
+              // アラートを重要度で分類
+              const critical = alerts.filter(a => a.severity === 'critical');
+              const warning = alerts.filter(a => a.severity === 'warning');
+              const info = alerts.filter(a => a.severity === 'info');
+              
+              if (critical.length > 0) {
+                body += '## 🔴 Critical\n\n';
+                critical.forEach(alert => {
+                  body += `### ${alert.student}\n`;
+                  body += `- **種類**: ${alert.type}\n`;
+                  body += `- **メッセージ**: ${alert.message}\n`;
+                  body += `- **推奨アクション**: ${alert.action}\n\n`;
+                });
+              }
+              
+              if (warning.length > 0) {
+                body += '## 🟡 Warning\n\n';
+                warning.forEach(alert => {
+                  body += `### ${alert.student}\n`;
+                  body += `- **種類**: ${alert.type}\n`;
+                  body += `- **メッセージ**: ${alert.message}\n`;
+                  body += `- **推奨アクション**: ${alert.action}\n\n`;
+                });
+              }
+              
+              if (info.length > 0) {
+                body += '## ℹ️ Info\n\n';
+                info.forEach(alert => {
+                  body += `### ${alert.student}\n`;
+                  body += `- **種類**: ${alert.type}\n`;
+                  body += `- **メッセージ**: ${alert.message}\n`;
+                  body += `- **推奨アクション**: ${alert.action}\n\n`;
+                });
+              }
+              
+              body += '---\n\n';
+              body += '> 💡 このIssueは自動生成されています。対応後はクローズしてください。';
+              
+              // 既存のIssueがあれば更新、なければ作成
+              if (issues.data.length > 0) {
+                const existingIssue = issues.data[0];
+                await github.rest.issues.update({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  issue_number: existingIssue.number,
+                  title: issueTitle,
+                  body: body
+                });
+                console.log(`Updated alert issue #${existingIssue.number}`);
+              } else {
+                await github.rest.issues.create({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  title: issueTitle,
+                  body: body,
+                  labels: ['モチベーションアラート', '自動生成']
+                });
+                console.log('Created new alert issue');
+              }
+            }

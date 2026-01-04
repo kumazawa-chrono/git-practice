@@ -1,0 +1,99 @@
+name: Weekly Report
+
+on:
+  schedule:
+    - cron: '0 0 * * 1'  # 毎週月曜 0:00 UTC (日本時間 9:00 JST)
+  workflow_dispatch:
+
+jobs:
+  report:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Generate weekly report
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const path = require('path');
+            
+            // 各研修生の進捗を集計
+            const studentsDir = path.join('progress', 'students');
+            
+            if (!fs.existsSync(studentsDir)) {
+              console.log('Students directory not found');
+              return;
+            }
+            
+            const students = fs.readdirSync(studentsDir).filter(item => {
+              const itemPath = path.join(studentsDir, item);
+              return fs.statSync(itemPath).isDirectory();
+            });
+            
+            let report = '# 週次進捗レポート\n\n';
+            const now = new Date();
+            report += `生成日時: ${now.toLocaleString('ja-JP', { timeZone: 'Asia/Tokyo' })}\n\n`;
+            
+            if (students.length === 0) {
+              report += '研修生の進捗データが見つかりませんでした。\n';
+            } else {
+              for (const student of students) {
+                const progressPath = path.join(studentsDir, student, 'progress.md');
+                if (!fs.existsSync(progressPath)) {
+                  report += `## ${student}\n`;
+                  report += `- 進捗ファイルが見つかりません\n\n`;
+                  continue;
+                }
+                
+                const content = fs.readFileSync(progressPath, 'utf8');
+                const completed = (content.match(/✅/g) || []).length;
+                const inProgress = (content.match(/🔄/g) || []).length;
+                const pending = (content.match(/⏳|未着手/g) || []).length;
+                
+                report += `## ${student}\n`;
+                report += `- ✅ 完了: ${completed}件\n`;
+                report += `- 🔄 進行中: ${inProgress}件\n`;
+                report += `- ⏳ 未着手: ${pending}件\n\n`;
+              }
+            }
+            
+            // Discussionに投稿（Discussionsが有効な場合）
+            try {
+              // まずカテゴリを取得
+              const categories = await github.rest.repos.listDiscussionCategories({
+                owner: context.repo.owner,
+                repo: context.repo.repo
+              });
+              
+              let categoryId = null;
+              if (categories.data && categories.data.length > 0) {
+                // announcementsカテゴリを探す、なければ最初のカテゴリを使用
+                const announcements = categories.data.find(c => c.name === 'announcements');
+                categoryId = announcements ? announcements.id : categories.data[0].id;
+              }
+              
+              if (categoryId) {
+                await github.rest.repos.createDiscussion({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  title: `週次進捗レポート - ${now.toLocaleDateString('ja-JP')}`,
+                  body: report,
+                  category_id: categoryId
+                });
+                console.log('Weekly report posted to Discussions');
+              } else {
+                // Discussionsが有効でない場合、Issueとして作成
+                await github.rest.issues.create({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  title: `週次進捗レポート - ${now.toLocaleDateString('ja-JP')}`,
+                  body: report,
+                  labels: ['週次レポート']
+                });
+                console.log('Weekly report posted as Issue');
+              }
+            } catch (error) {
+              console.error('Failed to post report:', error);
+              // エラーが発生しても続行
+            }

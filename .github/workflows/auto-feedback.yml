@@ -1,0 +1,70 @@
+name: Auto Feedback
+
+on:
+  workflow_run:
+    workflows: ["Exercise Check"]
+    types: [completed]
+
+jobs:
+  feedback:
+    runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'failure' }}
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Generate helpful feedback
+        uses: actions/github-script@v7
+        with:
+          script: |
+            // workflow_runからPR番号を取得
+            const workflowRun = context.payload.workflow_run;
+            const prs = workflowRun.pull_requests || [];
+            
+            if (prs.length === 0) {
+              console.log('No PRs found in workflow_run');
+              return;
+            }
+            
+            const prNumber = prs[0].number;
+            console.log(`Found PR #${prNumber}`);
+            
+            // 失敗時の自動フィードバック
+            const comment = `## 💡 ヒント
+
+テストが失敗しています。以下を確認してみてください：
+
+1. **エラーメッセージを読む** - 何が間違っているか具体的に書いてあります
+2. **コンテンツを見直す** - 該当するカテゴリのREADMEを再確認
+3. **型エラー** - TypeScriptの型が正しいか確認
+
+それでも解決しない場合は、[Discussions](../../discussions) で質問してください！
+
+<details>
+<summary>質問テンプレート</summary>
+
+\`\`\`markdown
+## 状況
+何をしようとしていますか？
+
+## 試したこと
+どんな方法を試しましたか？
+
+## エラー内容
+（GitHub Actionsのログを貼り付け）
+\`\`\`
+
+</details>
+`;
+            
+            // PRにコメント
+            try {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: prNumber,
+                body: comment
+              });
+              console.log(`Posted feedback comment to PR #${prNumber}`);
+            } catch (error) {
+              console.error(`Failed to post comment to PR #${prNumber}:`, error);
+            }

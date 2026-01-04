@@ -1,0 +1,13 @@
+# コンテンツの変更はメンターがレビュー
+/content/ @honeycome/mentors
+/docs/ @honeycome/mentors
+
+# 研修生の課題提出は自動チェック後にレビュー
+/exercises/ @honeycome/mentors
+
+# 進捗ファイルは自動更新のみ
+/progress/
+
+# 自動化設定の変更は管理者のみ
+/.github/ @honeycome/admins
+/automation/ @honeycome/admins

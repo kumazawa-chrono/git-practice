@@ -1,0 +1,21 @@
+{
+  "name": "bootcamp-automation",
+  "version": "1.0.0",
+  "description": "Automation scripts for bootcamp v2",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "feedback": "node feedback-generators/index.js",
+    "review": "node review-scripts/auto-review.js",
+    "test-runner": "node test-runners/exercise-test-runner.js"
+  },
+  "keywords": [
+    "automation",
+    "bootcamp",
+    "feedback",
+    "review"
+  ],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {}
+}

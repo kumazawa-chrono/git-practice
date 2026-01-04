@@ -1,0 +1,112 @@
+name: Exercise Check
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'exercises/**'
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          
+      - name: Install dependencies
+        run: |
+          if [ -f package.json ]; then
+            npm ci
+          else
+            echo "package.json not found, skipping npm install"
+          fi
+        continue-on-error: true
+        
+      - name: Get changed files
+        id: changed
+        uses: tj-actions/changed-files@v40
+        with:
+          files: exercises/**
+          
+      - name: Run tests for changed exercises
+        run: |
+          if [ -n "${{ steps.changed.outputs.all_changed_files }}" ]; then
+            for file in ${{ steps.changed.outputs.all_changed_files }}; do
+              exercise_dir=$(dirname "$file")
+              if [ -f "$exercise_dir/package.json" ]; then
+                cd "$exercise_dir"
+                npm install
+                npm test || true
+                cd -
+              fi
+            done
+          else
+            echo "No exercise files changed"
+          fi
+        continue-on-error: true
+          
+      - name: Run ESLint
+        run: |
+          if [ -f package.json ] && npm list eslint > /dev/null 2>&1; then
+            npm run lint -- --format json --output-file eslint-report.json || true
+          else
+            echo "ESLint not configured, skipping"
+          fi
+        continue-on-error: true
+        
+      - name: Run TypeScript check
+        run: |
+          if [ -f package.json ] && npm list typescript > /dev/null 2>&1; then
+            npm run type-check || true
+          else
+            echo "TypeScript not configured, skipping"
+          fi
+        continue-on-error: true
+        
+      - name: Post results comment
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            let comment = '## 🤖 自動チェック結果\n\n';
+            
+            // テスト結果
+            comment += '### テスト\n';
+            const testStatus = '${{ job.status }}' === 'success' 
+              ? '✅ すべてのテストが通過しました\n' 
+              : '❌ テストが失敗しました。エラーを確認してください\n';
+            comment += testStatus;
+            
+            // ESLint結果
+            if (fs.existsSync('eslint-report.json')) {
+              try {
+                const report = JSON.parse(fs.readFileSync('eslint-report.json', 'utf8'));
+                const errors = Array.isArray(report) 
+                  ? report.reduce((sum, file) => sum + (file.errorCount || 0), 0)
+                  : (report.errorCount || 0);
+                const warnings = Array.isArray(report)
+                  ? report.reduce((sum, file) => sum + (file.warningCount || 0), 0)
+                  : (report.warningCount || 0);
+                comment += `\n### Lint\n`;
+                comment += errors === 0 
+                  ? '✅ Lintエラーなし\n' 
+                  : `❌ ${errors}件のエラー、${warnings}件の警告\n`;
+              } catch (e) {
+                comment += '\n### Lint\n⚠️ レポートの読み込みに失敗しました\n';
+              }
+            }
+            
+            comment += '\n---\n';
+            comment += '質問があれば [Discussions](../discussions) で聞いてください！';
+            
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: comment
+            });

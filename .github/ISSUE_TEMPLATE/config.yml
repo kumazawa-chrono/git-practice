@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: 💬 技術的な質問
+    url: https://github.com/honeycome-bootcamp/bootcamp-v2/discussions/categories/q-a
+    about: 技術的な質問はDiscussionsで聞いてください
+  - name: 📚 学習メモの共有
+    url: https://github.com/honeycome-bootcamp/bootcamp-v2/discussions/categories/show-and-tell
+    about: 学んだことや気づきを共有しましょう

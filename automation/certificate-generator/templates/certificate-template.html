@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>修了証 - {{STUDENT_NAME}}</title>
+  <style>
+    @page {
+      size: A4;
+      margin: 0;
+    }
+    
+    body {
+      font-family: 'Hiragino Sans', 'Hiragino Kaku Gothic ProN', 'Yu Gothic', 'Meiryo', sans-serif;
+      margin: 0;
+      padding: 60px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .certificate {
+      background: white;
+      width: 210mm;
+      min-height: 297mm;
+      padding: 60px;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+      position: relative;
+      box-sizing: border-box;
+    }
+    
+    .certificate::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      border: 8px solid #667eea;
+      pointer-events: none;
+    }
+    
+    .header {
+      text-align: center;
+      margin-bottom: 40px;
+      border-bottom: 3px solid #667eea;
+      padding-bottom: 20px;
+    }
+    
+    .header h1 {
+      font-size: 36px;
+      color: #667eea;
+      margin: 0;
+      font-weight: bold;
+      letter-spacing: 2px;
+    }
+    
+    .header p {
+      font-size: 18px;
+      color: #666;
+      margin: 10px 0 0 0;
+    }
+    
+    .content {
+      text-align: center;
+      margin: 60px 0;
+    }
+    
+    .student-name {
+      font-size: 48px;
+      font-weight: bold;
+      color: #333;
+      margin: 40px 0;
+      padding: 20px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    
+    .certificate-text {
+      font-size: 20px;
+      line-height: 1.8;
+      color: #444;
+      margin: 40px 0;
+    }
+    
+    .course-info {
+      background: #f8f9fa;
+      padding: 30px;
+      margin: 40px 0;
+      border-left: 5px solid #667eea;
+      text-align: left;
+    }
+    
+    .course-info h2 {
+      font-size: 24px;
+      color: #667eea;
+      margin: 0 0 20px 0;
+    }
+    
+    .course-info p {
+      font-size: 18px;
+      margin: 10px 0;
+      color: #555;
+    }
+    
+    .footer {
+      margin-top: 80px;
+      border-top: 2px solid #ddd;
+      padding-top: 30px;
+    }
+    
+    .signature-section {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 60px;
+    }
+    
+    .signature-box {
+      width: 45%;
+      text-align: center;
+    }
+    
+    .signature-line {
+      border-top: 2px solid #333;
+      margin-top: 60px;
+      padding-top: 10px;
+    }
+    
+    .date {
+      text-align: right;
+      margin-top: 40px;
+      color: #666;
+      font-size: 16px;
+    }
+    
+    .seal {
+      position: absolute;
+      bottom: 80px;
+      right: 80px;
+      width: 120px;
+      height: 120px;
+      border: 4px solid #667eea;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      color: #667eea;
+      font-weight: bold;
+      background: white;
+    }
+  </style>
+</head>
+<body>
+  <div class="certificate">
+    <div class="header">
+      <h1>修了証</h1>
+      <p>CERTIFICATE OF COMPLETION</p>
+    </div>
+    
+    <div class="content">
+      <div class="student-name">{{STUDENT_NAME}}</div>
+      
+      <div class="certificate-text">
+        この修了証は、{{STUDENT_NAME}} 様が<br>
+        Honeycomeエンジニア研修プログラムにおいて、<br>
+        以下のコースを修了されたことを証明します。
+      </div>
+      
+      <div class="course-info">
+        <h2>コース情報</h2>
+        <p><strong>コース名:</strong> {{COURSE_NAME}}</p>
+        <p><strong>修了日:</strong> {{COMPLETION_DATE}}</p>
+        <p><strong>メンター:</strong> {{MENTOR_NAME}}</p>
+      </div>
+    </div>
+    
+    <div class="footer">
+      <div class="signature-section">
+        <div class="signature-box">
+          <div class="signature-line">
+            <strong>{{MENTOR_NAME}}</strong><br>
+            メンター
+          </div>
+        </div>
+        <div class="signature-box">
+          <div class="signature-line">
+            <strong>Honeycome</strong><br>
+            エンジニア研修プログラム
+          </div>
+        </div>
+      </div>
+      
+      <div class="date">
+        発行日: {{ISSUE_DATE}}
+      </div>
+    </div>
+    
+    <div class="seal">
+      修了<br>証明
+    </div>
+  </div>
+</body>
+</html>

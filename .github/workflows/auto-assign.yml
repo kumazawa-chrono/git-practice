@@ -1,0 +1,75 @@
+name: Auto Assign
+
+on:
+  pull_request:
+    types: [opened]
+
+jobs:
+  assign:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Auto assign reviewers
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const { owner, repo } = context.repo;
+            const prNumber = context.payload.pull_request.number;
+            
+            // CODEOWNERSファイルからレビュアーを取得
+            const fs = require('fs');
+            const path = require('path');
+            
+            let reviewers = [];
+            const codeownersPath = path.join('.github', 'CODEOWNERS');
+            
+            if (fs.existsSync(codeownersPath)) {
+              try {
+                const codeowners = fs.readFileSync(codeownersPath, 'utf8');
+                // CODEOWNERSからメンターのGitHubユーザー名を抽出
+                const lines = codeowners.split('\n');
+                for (const line of lines) {
+                  if (line.trim() && !line.startsWith('#')) {
+                    const parts = line.trim().split(/\s+/);
+                    if (parts.length > 1) {
+                      // @username形式のレビュアーを抽出
+                      const usernames = parts.slice(1).filter(u => u.startsWith('@'));
+                      reviewers.push(...usernames.map(u => u.replace('@', '')));
+                    }
+                  }
+                }
+                console.log(`Found ${reviewers.length} reviewers from CODEOWNERS`);
+              } catch (error) {
+                console.error('Error reading CODEOWNERS:', error);
+              }
+            } else {
+              console.log('CODEOWNERS file not found');
+            }
+            
+            // デフォルトのメンター（CODEOWNERSに記載がない場合）
+            if (reviewers.length === 0) {
+              // 環境変数からメンターを取得、または空のまま
+              const defaultMentors = process.env.DEFAULT_MENTORS 
+                ? process.env.DEFAULT_MENTORS.split(',').map(m => m.trim())
+                : [];
+              reviewers.push(...defaultMentors);
+              console.log(`Using default mentors: ${reviewers.length}`);
+            }
+            
+            // 重複を除去
+            reviewers = [...new Set(reviewers)];
+            
+            if (reviewers.length > 0) {
+              try {
+                await github.rest.pulls.requestReviewers({
+                  owner,
+                  repo,
+                  pull_number: prNumber,
+                  reviewers: reviewers
+                });
+                console.log(`Assigned reviewers to PR #${prNumber}: ${reviewers.join(', ')}`);
+              } catch (error) {
+                console.error(`Failed to assign reviewers to PR #${prNumber}:`, error);
+              }
+            } else {
+              console.log('No reviewers to assign');
+            }

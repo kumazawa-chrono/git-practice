@@ -1,0 +1,13 @@
+{
+  "name": "git-basics-test",
+  "version": "1.0.0",
+  "description": "Git基礎の理解度チェックテスト",
+  "main": "test.js",
+  "scripts": {
+    "test": "node test.js",
+    "grade": "node grade.js"
+  },
+  "keywords": ["test", "git"],
+  "author": "",
+  "license": "ISC"
+}
