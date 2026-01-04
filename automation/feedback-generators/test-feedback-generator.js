@@ -114,7 +114,7 @@ class TestFeedbackGenerator {
       feedback.details.push({
         type: 'Unknown',
         message: 'エラーの詳細を確認してください。',
-        suggestion: '1. エラーメッセージをよく読む\n2. 該当するコンテンツを見直す\n3. それでも解決しない場合はDiscussionsで質問する'
+        suggestion: '1. エラーメッセージをよく読む\n2. 該当するコンテンツを見直す\n3. それでも解決しない場合はSlackで質問する'
       });
     }
 
@@ -184,7 +184,7 @@ class TestFeedbackGenerator {
     }
 
     markdown += '---\n';
-    markdown += '💬 質問があれば [Discussions](../../discussions) で聞いてください！\n';
+    markdown += '💬 質問があれば Slack で聞いてください！\n';
 
     return markdown;
   }

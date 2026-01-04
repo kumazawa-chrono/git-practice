@@ -288,4 +288,4 @@ git commit -m "Add user feature"  # 変更が大きすぎる
 
 ---
 
-**ヒント**: わからないことがあれば、[GitHub Discussions](https://github.com/honeycome-bootcamp/bootcamp-v2/discussions)で質問してください！
+**ヒント**: わからないことがあれば、Slackで質問してください！

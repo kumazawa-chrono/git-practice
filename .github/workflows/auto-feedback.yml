@@ -37,7 +37,7 @@ jobs:
 2. **コンテンツを見直す** - 該当するカテゴリのREADMEを再確認
 3. **型エラー** - TypeScriptの型が正しいか確認
 
-それでも解決しない場合は、[Discussions](../../discussions) で質問してください！
+それでも解決しない場合は、Slack で質問してください！
 
 <details>
 <summary>質問テンプレート</summary>

@@ -102,7 +102,7 @@ jobs:
             }
             
             comment += '\n---\n';
-            comment += '質問があれば [Discussions](../discussions) で聞いてください！';
+            comment += '質問があれば Slack で聞いてください！';
             
             github.rest.issues.createComment({
               issue_number: context.issue.number,

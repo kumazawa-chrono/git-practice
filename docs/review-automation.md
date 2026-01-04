@@ -175,7 +175,7 @@ jobs:
             }
             
             comment += '\n---\n';
-            comment += '質問があれば [Discussions](../discussions) で聞いてください！';
+            comment += '質問があれば Slack で聞いてください！';
             
             github.rest.issues.createComment({
               issue_number: context.issue.number,
@@ -265,7 +265,7 @@ jobs:
 2. **コンテンツを見直す** - 該当するカテゴリのREADMEを再確認
 3. **型エラー** - TypeScriptの型が正しいか確認
 
-それでも解決しない場合は、[Discussions](../../discussions) で質問してください！
+それでも解決しない場合は、Slack で質問してください！
 
 <details>
 <summary>質問テンプレート</summary>
@@ -385,13 +385,13 @@ jobs:
               report += `- 進行中: ${inProgress}\n\n`;
             }
             
-            // Discussionに投稿
-            await github.rest.discussions.create({
+            // Issueとして作成（Discussionsはプライベートリポジトリでは有料のため使用しない）
+            await github.rest.issues.create({
               owner: context.repo.owner,
               repo: context.repo.repo,
               title: `週次進捗レポート - ${new Date().toLocaleDateString('ja-JP')}`,
               body: report,
-              category_id: 'announcements'
+              labels: ['週次レポート']
             });
 ```
 

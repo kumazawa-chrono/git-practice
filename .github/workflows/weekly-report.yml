@@ -58,41 +58,16 @@ jobs:
               }
             }
             
-            // Discussionに投稿（Discussionsが有効な場合）
+            // Issueとして作成（Discussionsはプライベートリポジトリでは有料のため使用しない）
             try {
-              // まずカテゴリを取得
-              const categories = await github.rest.repos.listDiscussionCategories({
+              await github.rest.issues.create({
                 owner: context.repo.owner,
-                repo: context.repo.repo
+                repo: context.repo.repo,
+                title: `週次進捗レポート - ${now.toLocaleDateString('ja-JP')}`,
+                body: report,
+                labels: ['週次レポート']
               });
-              
-              let categoryId = null;
-              if (categories.data && categories.data.length > 0) {
-                // announcementsカテゴリを探す、なければ最初のカテゴリを使用
-                const announcements = categories.data.find(c => c.name === 'announcements');
-                categoryId = announcements ? announcements.id : categories.data[0].id;
-              }
-              
-              if (categoryId) {
-                await github.rest.repos.createDiscussion({
-                  owner: context.repo.owner,
-                  repo: context.repo.repo,
-                  title: `週次進捗レポート - ${now.toLocaleDateString('ja-JP')}`,
-                  body: report,
-                  category_id: categoryId
-                });
-                console.log('Weekly report posted to Discussions');
-              } else {
-                // Discussionsが有効でない場合、Issueとして作成
-                await github.rest.issues.create({
-                  owner: context.repo.owner,
-                  repo: context.repo.repo,
-                  title: `週次進捗レポート - ${now.toLocaleDateString('ja-JP')}`,
-                  body: report,
-                  labels: ['週次レポート']
-                });
-                console.log('Weekly report posted as Issue');
-              }
+              console.log('Weekly report posted as Issue');
             } catch (error) {
               console.error('Failed to post report:', error);
               // エラーが発生しても続行

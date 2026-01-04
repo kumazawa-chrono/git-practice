@@ -175,7 +175,7 @@ GitHubでプルリクエストを作成してください。
 
 - **コンテンツを見直す**: [カテゴリ名]のコンテンツを再確認
 - **公式ドキュメントを参照**: [参考リンク]
-- **質問する**: [GitHub Discussions](https://github.com/honeycome-bootcamp/bootcamp-v2/discussions)
+- **質問する**: Slack
 
 ---
 

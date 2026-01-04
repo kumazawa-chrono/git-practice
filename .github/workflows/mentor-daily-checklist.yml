@@ -46,23 +46,7 @@ jobs:
               });
             }
             
-            // 2. 未回答のDiscussionsをチェック
-            const unansweredDiscussions = await getUnansweredDiscussions();
-            if (unansweredDiscussions.length > 0) {
-              checklist.items.push({
-                category: '質問対応',
-                priority: 'high',
-                title: `未回答の質問: ${unansweredDiscussions.length}件`,
-                items: unansweredDiscussions.map(disc => ({
-                  text: disc.title,
-                  url: disc.html_url,
-                  author: disc.user?.login || '不明'
-                })),
-                action: '24時間以内に回答を推奨'
-              });
-            }
-            
-            // 3. モチベーションアラートをチェック
+            // 2. モチベーションアラートをチェック
             const motivationAlerts = await getMotivationAlerts();
             if (motivationAlerts.length > 0) {
               checklist.items.push({
@@ -169,53 +153,6 @@ jobs:
                 return pending.slice(0, 10); // 最大10件
               } catch (error) {
                 console.error('Error getting pending PRs:', error);
-                return [];
-              }
-            }
-            
-            /**
-             * 未回答のDiscussionsを取得
-             */
-            async function getUnansweredDiscussions() {
-              try {
-                const discussions = await github.rest.discussions.listForRepo({
-                  owner: context.repo.owner,
-                  repo: context.repo.repo,
-                  state: 'open',
-                  sort: 'updated',
-                  direction: 'desc',
-                  per_page: 20
-                });
-                
-                // 過去24時間以内に作成または更新された質問
-                const oneDayAgo = new Date();
-                oneDayAgo.setDate(oneDayAgo.getDate() - 1);
-                
-                const unanswered = [];
-                for (const disc of discussions.data) {
-                  const updatedAt = new Date(disc.updated_at);
-                  if (updatedAt > oneDayAgo) {
-                    // メンターによる回答がない場合
-                    const comments = await github.rest.discussions.listComments({
-                      owner: context.repo.owner,
-                      repo: context.repo.repo,
-                      discussion_number: disc.number
-                    });
-                    
-                    // メンターの回答があるかチェック（簡易版：author_associationがOWNERまたはMEMBER）
-                    const hasMentorAnswer = comments.data.some(
-                      comment => comment.author_association === 'OWNER' || comment.author_association === 'MEMBER'
-                    );
-                    
-                    if (!hasMentorAnswer) {
-                      unanswered.push(disc);
-                    }
-                  }
-                }
-                
-                return unanswered.slice(0, 10); // 最大10件
-              } catch (error) {
-                console.error('Error getting unanswered discussions:', error);
                 return [];
               }
             }
@@ -366,7 +303,7 @@ jobs:
                 body += `### 基本チェックリスト\n\n`;
                 body += `- [ ] GitHub通知を確認\n`;
                 body += `- [ ] 新しいPRやIssueがないか確認\n`;
-                body += `- [ ] Discussionsの質問がないか確認\n`;
+                body += `- [ ] Slackの質問がないか確認\n`;
               } else {
                 body += `## 📌 本日のチェック項目\n\n`;
                 
@@ -399,7 +336,7 @@ jobs:
                 body += `## ✅ 基本チェックリスト\n\n`;
                 body += `- [ ] GitHub通知を確認\n`;
                 body += `- [ ] 新しいPRやIssueがないか確認\n`;
-                body += `- [ ] Discussionsの質問がないか確認\n`;
+                body += `- [ ] Slackの質問がないか確認\n`;
               }
               
               body += `\n---\n\n`;

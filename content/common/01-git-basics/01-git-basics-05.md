@@ -41,7 +41,7 @@ flowchart TB
 | Pull Request | コードレビュー |
 | Issues | タスク・バグ管理 |
 | Actions | CI/CD |
-| Discussions | 議論・質問 |
+| Slack | 議論・質問 |
 
 ### 2. リポジトリの操作
 

@@ -1,5 +1,5 @@
 name: ❓ 質問
-description: 学習内容に関する質問（技術的な質問はDiscussionsを推奨）
+description: 学習内容に関する質問（技術的な質問はSlackを推奨）
 title: "[質問] "
 labels: ["question"]
 assignees: []
@@ -8,7 +8,7 @@ body:
   - type: markdown
     attributes:
       value: |
-        ⚠️ **技術的な質問は [GitHub Discussions](../../discussions) を使ってください！**
+        ⚠️ **技術的な質問は Slack を使ってください！**
         
         このIssueテンプレートは、コンテンツ自体への質問（説明の意図など）用です。
 

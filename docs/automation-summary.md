@@ -40,7 +40,7 @@
 6. **`weekly-report.yml`**
    - **トリガー**: 毎週月曜 9:00 JST
    - **機能**: 週次進捗レポート生成
-   - **出力**: GitHub DiscussionsまたはIssue
+   - **出力**: GitHub Issue
 
 7. **`motivation-monitor.yml`**
    - **トリガー**: 毎日 9:00 JST
@@ -55,7 +55,7 @@
    - **機能**: メンターデイリーチェックリスト生成
    - **チェック項目**:
      - レビュー待ちPR
-     - 未回答Discussions
+     - Slackの質問（手動確認）
      - モチベーションアラート
      - 新しいIssue
      - 週次レポート確認（月曜）
