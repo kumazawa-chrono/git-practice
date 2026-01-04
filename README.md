@@ -70,6 +70,8 @@ bootcamp-v2/
 3. [カリキュラム概要](docs/curriculum-overview.md)で全体像を把握する
 4. 共通基礎から学習を開始する
 
+> 💡 **経験のあるエンジニアの方へ**: AI駆動開発を許可される前に、[経験エンジニア向け AI駆動開発前提条件コース](docs/experienced-engineer-prerequisites.md)を完了してください。
+
 ## メンター向け
 
 > 📌 **重要**: メンター向けドキュメントと料金関係の資料は、別のプライベートリポジトリで管理されています。
@@ -91,6 +93,7 @@ bootcamp-v2/
 - [レビュー自動化設計](docs/review-automation.md)
 - [プラットフォーム選択の比較](docs/platform-comparison.md)
 - [メンター専用リポジトリ移行手順](docs/mentor-repo-migration.md)
+- [経験エンジニア向け AI駆動開発前提条件コース](docs/experienced-engineer-prerequisites.md) - 経験エンジニア向け
 - [コンテンツ改善ガイド](docs/contributing.md)
 
 > 📌 **メンター向けドキュメント**: [メンター専用リポジトリ](https://github.com/honeycome-bootcamp/bootcamp-v2-mentor)で管理されています（メンターのみアクセス可能）
