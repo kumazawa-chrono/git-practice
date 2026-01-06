@@ -293,26 +293,26 @@ class ReportGenerator {
       return '応用演習の評価が記録されていません';
     }
 
-    const eval = this.data.capstoneEvaluation;
+    const evaluation = this.data.capstoneEvaluation;
     let section = '';
 
-    if (eval.theme) {
-      section += `**テーマ**: ${eval.theme}\n\n`;
+    if (evaluation.theme) {
+      section += `**テーマ**: ${evaluation.theme}\n\n`;
     }
-    if (eval.repository) {
-      section += `**リポジトリ**: ${eval.repository}\n\n`;
+    if (evaluation.repository) {
+      section += `**リポジトリ**: ${evaluation.repository}\n\n`;
     }
-    if (eval.deployUrl) {
-      section += `**デプロイURL**: ${eval.deployUrl}\n\n`;
+    if (evaluation.deployUrl) {
+      section += `**デプロイURL**: ${evaluation.deployUrl}\n\n`;
     }
 
-    if (eval.scores) {
+    if (evaluation.scores) {
       section += '### 評価結果\n\n';
       section += '| 項目 | 評価 | コメント |\n';
       section += '|------|------|----------|\n';
       
-      Object.keys(eval.scores).forEach(item => {
-        const score = eval.scores[item];
+      Object.keys(evaluation.scores).forEach(item => {
+        const score = evaluation.scores[item];
         section += `| ${item} | ${score.score} | ${score.comment || '-'} |\n`;
       });
     }
