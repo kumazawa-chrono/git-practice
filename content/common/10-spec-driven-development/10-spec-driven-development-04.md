@@ -224,3 +224,12 @@ flowchart TD
 
 これで共通基礎カリキュラムは完了です！
 次は[コース別カリキュラム](../../web/)に進んでください。
+
+---
+
+**著作権表示**
+
+Copyright © 2024 Honeycome Inc. All rights reserved.
+
+本コンテンツは、Honeycome Inc.の所有物です。無断での複製、配布、転載を禁止します。
+詳細は[利用規約](../../docs/terms-of-use.md)をご覧ください。

@@ -107,3 +107,12 @@ timeline
 - [Docker Compose公式ドキュメント](https://docs.docker.com/compose/)
 - [Dockerfile ベストプラクティス](https://docs.docker.com/develop/develop-images/dockerfile_best-practices/)
 - [12 Factor App](https://12factor.net/ja/)
+
+---
+
+**著作権表示**
+
+Copyright © 2024 Honeycome Inc. All rights reserved.
+
+本コンテンツは、Honeycome Inc.の所有物です。無断での複製、配布、転載を禁止します。
+詳細は[利用規約](../../../docs/terms-of-use.md)をご覧ください。

@@ -61,3 +61,12 @@ IoT開発では、ソフトウェアだけでなくハードウェアの知識�
 
 - [Arduino公式サイト](https://www.arduino.cc/)
 - [Raspberry Pi公式サイト](https://www.raspberrypi.org/)
+
+---
+
+**著作権表示**
+
+Copyright © 2024 Honeycome Inc. All rights reserved.
+
+本コンテンツは、Honeycome Inc.の所有物です。無断での複製、配布、転載を禁止します。
+詳細は[利用規約](../../docs/terms-of-use.md)をご覧ください。

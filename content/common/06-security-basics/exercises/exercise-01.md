@@ -76,3 +76,12 @@ app.post('/api/login', async (req, res) => {
 - [ ] 各脆弱性を説明できた
 - [ ] 攻撃例を示せた
 - [ ] 安全なコードに修正できた
+
+---
+
+**著作権表示**
+
+Copyright © 2024 Honeycome Inc. All rights reserved.
+
+本コンテンツは、Honeycome Inc.の所有物です。無断での複製、配布、転載を禁止します。
+詳細は[利用規約](../../../docs/terms-of-use.md)をご覧ください。

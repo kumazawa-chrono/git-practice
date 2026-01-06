@@ -161,3 +161,12 @@ export class MyStack extends cdk.Stack {
 - [AWS CDK APIリファレンス](https://docs.aws.amazon.com/cdk/api/v2/)
 - [CDK Workshop](https://cdkworkshop.com/) - 公式チュートリアル
 - [LocalStack](https://localstack.cloud/) - ローカルAWSモック
+
+---
+
+**著作権表示**
+
+Copyright © 2024 Honeycome Inc. All rights reserved.
+
+本コンテンツは、Honeycome Inc.の所有物です。無断での複製、配布、転載を禁止します。
+詳細は[利用規約](../../../docs/terms-of-use.md)をご覧ください。

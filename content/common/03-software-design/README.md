@@ -90,3 +90,12 @@ timeline
 - [Clean Code](https://www.amazon.co.jp/dp/4048930591)
 - [リファクタリング](https://www.amazon.co.jp/dp/4274224546)
 - [デザインパターン](https://www.amazon.co.jp/dp/4797311126)
+
+---
+
+**著作権表示**
+
+Copyright © 2024 Honeycome Inc. All rights reserved.
+
+本コンテンツは、Honeycome Inc.の所有物です。無断での複製、配布、転載を禁止します。
+詳細は[利用規約](../../../docs/terms-of-use.md)をご覧ください。

@@ -406,3 +406,12 @@ Q: 本番環境で restart: always が重要な理由は何ですか？
 ## 🔗 次のコンテンツ
 
 [マルチコンテナ構成](11-container-advanced-04.md)に進んでください。
+
+---
+
+**著作権表示**
+
+Copyright © 2024 Honeycome Inc. All rights reserved.
+
+本コンテンツは、Honeycome Inc.の所有物です。無断での複製、配布、転載を禁止します。
+詳細は[利用規約](../../docs/terms-of-use.md)をご覧ください。

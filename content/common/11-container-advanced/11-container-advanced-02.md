@@ -329,3 +329,12 @@ Q: 開発時と本番でストレージの種類を変える理由は何です�
 ## 🔗 次のコンテンツ
 
 [Docker Compose基礎](11-container-advanced-03.md)に進んでください。
+
+---
+
+**著作権表示**
+
+Copyright © 2024 Honeycome Inc. All rights reserved.
+
+本コンテンツは、Honeycome Inc.の所有物です。無断での複製、配布、転載を禁止します。
+詳細は[利用規約](../../docs/terms-of-use.md)をご覧ください。

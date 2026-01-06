@@ -309,3 +309,12 @@ AIに実装を依頼する際は、仕様書の具体的な入力/出力、バ�
 次のステップ:
 - [コース別カリキュラム（Web/App/IoT）](../../web/)に進む
 - または[発展カテゴリ（選択）](../11-container-advanced/)を学ぶ
+
+---
+
+**著作権表示**
+
+Copyright © 2024 Honeycome Inc. All rights reserved.
+
+本コンテンツは、Honeycome Inc.の所有物です。無断での複製、配布、転載を禁止します。
+詳細は[利用規約](../../docs/terms-of-use.md)をご覧ください。

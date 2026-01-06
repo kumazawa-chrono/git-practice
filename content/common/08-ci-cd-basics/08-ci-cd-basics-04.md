@@ -197,3 +197,12 @@ jobs:
 
 CI/CD基礎カテゴリを修了しました！
 [実践課題](./exercises/)に取り組んでから、[AI駆動開発](../09-ai-driven-development/)に進んでください。
+
+---
+
+**著作権表示**
+
+Copyright © 2024 Honeycome Inc. All rights reserved.
+
+本コンテンツは、Honeycome Inc.の所有物です。無断での複製、配布、転載を禁止します。
+詳細は[利用規約](../../docs/terms-of-use.md)をご覧ください。

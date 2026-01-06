@@ -97,3 +97,12 @@ flowchart TB
 | ESP32 | 低レベル制御 | 貸出可能 |
 | センサーキット | データ収集 | 貸出可能 |
 | ブレッドボード | 配線 | 貸出可能 |
+
+---
+
+**著作権表示**
+
+Copyright © 2024 Honeycome Inc. All rights reserved.
+
+本コンテンツは、Honeycome Inc.の所有物です。無断での複製、配布、転載を禁止します。
+詳細は[利用規約](../../../docs/terms-of-use.md)をご覧ください。

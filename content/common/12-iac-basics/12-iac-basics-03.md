@@ -411,3 +411,12 @@ Q: LocalStackでテストするメリットは何ですか？
 
 IaC入門カテゴリを修了しました！
 次は[クラウド実践](../13-cloud-practice/)に進んで、実際のAWS環境での運用を学びましょう。
+
+---
+
+**著作権表示**
+
+Copyright © 2024 Honeycome Inc. All rights reserved.
+
+本コンテンツは、Honeycome Inc.の所有物です。無断での複製、配布、転載を禁止します。
+詳細は[利用規約](../../docs/terms-of-use.md)をご覧ください。

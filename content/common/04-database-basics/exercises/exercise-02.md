@@ -118,3 +118,12 @@ INSERT INTO order_items (order_id, product_id, quantity) VALUES
 
 - 作成したSQLクエリ（`exercise-02.sql`）
 - 各クエリの実行結果
+
+---
+
+**著作権表示**
+
+Copyright © 2024 Honeycome Inc. All rights reserved.
+
+本コンテンツは、Honeycome Inc.の所有物です。無断での複製、配布、転載を禁止します。
+詳細は[利用規約](../../../docs/terms-of-use.md)をご覧ください。

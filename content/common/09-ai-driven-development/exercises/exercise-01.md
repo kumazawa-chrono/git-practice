@@ -59,3 +59,12 @@ TypeScriptで、以下の仕様の関数を作成してください:
 - [ ] インライン編集で型を追加できた
 - [ ] Chatで関数を生成できた
 - [ ] Composerで複数ファイルを生成できた
+
+---
+
+**著作権表示**
+
+Copyright © 2024 Honeycome Inc. All rights reserved.
+
+本コンテンツは、Honeycome Inc.の所有物です。無断での複製、配布、転載を禁止します。
+詳細は[利用規約](../../../docs/terms-of-use.md)をご覧ください。

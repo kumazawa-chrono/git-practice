@@ -115,3 +115,12 @@ timeline
 - [AWS Well-Architected Framework](https://aws.amazon.com/jp/architecture/well-architected/)
 - [Amazon ECS ドキュメント](https://docs.aws.amazon.com/ja_jp/ecs/)
 - [AWS Fargate](https://aws.amazon.com/jp/fargate/)
+
+---
+
+**著作権表示**
+
+Copyright © 2024 Honeycome Inc. All rights reserved.
+
+本コンテンツは、Honeycome Inc.の所有物です。無断での複製、配布、転載を禁止します。
+詳細は[利用規約](../../../docs/terms-of-use.md)をご覧ください。

@@ -336,3 +336,12 @@ Q: どのメトリクスにアラームを設定すべきですか？
 
 クラウド実践カテゴリを修了しました！
 次は[監視と運用](../14-monitoring-operations/)に進んで、本番サービスの監視方法を学びましょう。
+
+---
+
+**著作権表示**
+
+Copyright © 2024 Honeycome Inc. All rights reserved.
+
+本コンテンツは、Honeycome Inc.の所有物です。無断での複製、配布、転載を禁止します。
+詳細は[利用規約](../../docs/terms-of-use.md)をご覧ください。

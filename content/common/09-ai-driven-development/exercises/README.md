@@ -17,3 +17,12 @@ AIツールを使った開発を実践します。
 | [課題1](exercise-01.md) | ⭐ | 30分 | Cursor基本操作 |
 | [課題2](exercise-02.md) | ⭐⭐ | 45分 | プロンプト改善 |
 | [課題3](exercise-03.md) | ⭐⭐⭐ | 60分 | AI協働開発実践 |
+
+---
+
+**著作権表示**
+
+Copyright © 2024 Honeycome Inc. All rights reserved.
+
+本コンテンツは、Honeycome Inc.の所有物です。無断での複製、配布、転載を禁止します。
+詳細は[利用規約](../../../docs/terms-of-use.md)をご覧ください。

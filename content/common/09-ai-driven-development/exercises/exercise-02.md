@@ -82,3 +82,12 @@ APIレスポンスの形式を例で示して、商品一覧APIの実装を依�
 - [ ] 3つのプロンプトを改善した
 - [ ] テンプレートで機能を依頼した
 - [ ] Few-shotでAPIを実装した
+
+---
+
+**著作権表示**
+
+Copyright © 2024 Honeycome Inc. All rights reserved.
+
+本コンテンツは、Honeycome Inc.の所有物です。無断での複製、配布、転載を禁止します。
+詳細は[利用規約](../../../docs/terms-of-use.md)をご覧ください。
