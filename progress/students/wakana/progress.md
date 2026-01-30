@@ -205,3 +205,4 @@
 - **修了証**: `progress/students/{受講者名}/certificates/` に保存されます
 - **評価レポート**: `progress/students/{受講者名}/reports/` に保存されます
 - **GitHub Release**: コース完了時に自動でReleaseが作成され、修了証と評価レポートが添付されます
+update
